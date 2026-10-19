@@ -1,4 +1,5 @@
 import io
+import re
 import zipfile
 from urllib.request import urlopen
 
@@ -16,7 +17,7 @@ DATA_URL = "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zi
 st.set_page_config(page_title="PhishGuard AI", page_icon="🛡️", layout="wide")
 st.title("🛡️ PhishGuard AI")
 st.subheader("AI-powered suspicious SMS and message checker")
-st.write("Paste a text message to estimate whether it resembles spam or a potentially deceptive message. This demo uses a text-classification model trained on the UCI SMS Spam Collection dataset.")
+st.write("Paste a text message to estimate whether it resembles spam or a potentially deceptive message. This demo combines a text-classification model trained on the UCI SMS Spam Collection dataset with transparent checks for selected high-risk requests.")
 st.warning("This is a screening aid, not a guarantee. It classifies SMS-like text, not website URLs, and cannot prove a message is safe or malicious. Never share passwords, OTPs, or private information.")
 
 @st.cache_data(show_spinner="Loading and preparing the SMS dataset...")
@@ -56,6 +57,28 @@ def train_model():
     report = classification_report(y_test, predictions, output_dict=True, zero_division=0)
     return model, df, accuracy, report, y_test, predictions
 
+def detect_risk_signals(text):
+    """Transparent heuristic checks for common social-engineering patterns.
+
+    These rules supplement the ML prediction; they are not a second trained model.
+    """
+    text_lower = text.lower()
+    signals = []
+    patterns = [
+        (r"\b(?:send|share|tell|reply with|provide)\b.{0,45}\b(?:otp|one[- ]time password|verification code|security code|pin|password)\b|\b(?:otp|verification code|security code|pin|password)\b.{0,45}\b(?:send|share|reply|provide)\b",
+         "Requests an OTP, PIN, password, or verification code"),
+        (r"\b(?:pay|payment|fee|charge)\b.{0,55}\b(?:release|claim|prize|parcel|package|customs|delivery)\b|\b(?:customs|parcel|package|delivery)\b.{0,55}\b(?:pay|payment|fee|charge|unpaid)\b",
+         "Requests payment connected to a prize or delivery"),
+        (r"\b(?:job|employment|salary|position)\b.{0,70}\b(?:registration fee|deposit|pay upfront|processing fee)\b|\b(?:registration fee|deposit|processing fee)\b.{0,70}\b(?:job|employment|salary|position)\b",
+         "Requests an upfront fee related to a job offer"),
+        (r"\b(?:account|bank|card)\b.{0,60}\b(?:suspended|blocked|restricted|will be closed)\b.{0,70}\b(?:click|verify|reply|send|provide)\b",
+         "Combines an account-threat claim with a request to act"),
+    ]
+    for pattern, description in patterns:
+        if re.search(pattern, text_lower, re.DOTALL):
+            signals.append(description)
+    return signals
+
 with st.sidebar:
     st.header("How it works")
     st.markdown("1. Load labelled SMS examples.\n2. Convert text into TF-IDF features.\n3. Train a Logistic Regression classifier.\n4. Predict a label and show model confidence.")
@@ -93,16 +116,23 @@ if st.button("Analyze message", type="primary", use_container_width=True):
         probabilities = model.predict_proba([cleaned])[0]
         classes = list(model.named_steps["classifier"].classes_)
         confidence = float(probabilities[classes.index(predicted)]) * 100
-        if predicted == "spam":
-            st.error("⚠️ Model result: SPAM-LIKE / POTENTIALLY DECEPTIVE")
-            st.write("Treat this message cautiously. Avoid clicking links, calling numbers in the message, or sharing credentials/OTPs.")
+        risk_signals = detect_risk_signals(cleaned)
+        if predicted == "spam" or risk_signals:
+            st.error("⚠️ Risk assessment: CAUTION — suspicious patterns detected")
+            st.write(f"Machine-learning prediction: **{'Spam-like' if predicted == 'spam' else 'Legitimate-like'}**")
+            if risk_signals:
+                st.write("Additional safety checks found these warning signs:")
+                for signal in risk_signals:
+                    st.markdown(f"- {signal}")
+            st.write("Never share passwords, PINs, or OTPs. Verify payment or account requests using an official channel you find independently.")
         else:
-            st.success("Model result: MORE LIKE A LEGITIMATE MESSAGE")
-            st.write("The model did not classify this text as spam. That does not guarantee the sender or any links are safe.")
-        c1, c2 = st.columns(2)
-        c1.metric("Predicted class", "Spam-like" if predicted == "spam" else "Legitimate-like")
+            st.success("No specific high-risk pattern was detected")
+            st.write("The model did not classify this text as spam, and the extra checks found none of their configured warning signs. This does not guarantee the message or any link is safe.")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("ML prediction", "Spam-like" if predicted == "spam" else "Legitimate-like")
         c2.metric("Model confidence", f"{confidence:.1f}%")
-        st.caption("Confidence is the model's estimated class probability, not a calibrated guarantee of safety.")
+        c3.metric("Extra warning signs", str(len(risk_signals)))
+        st.caption("Confidence is the model's estimated class probability, not a calibrated guarantee of safety. The additional checks are transparent rules, not learned or continuously updated AI.")
         # Display influential terms from the fitted linear model for a lightweight explanation.
         vectorizer = model.named_steps["tfidf"]
         classifier = model.named_steps["classifier"]
