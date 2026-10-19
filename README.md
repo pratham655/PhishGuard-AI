@@ -22,6 +22,7 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
 - Pandas and NumPy (via dependencies)
 - scikit-learn: TF-IDF + Logistic Regression
 - Matplotlib
+- Python `unittest` for rule-check tests
 
 ## Run locally
 
@@ -56,15 +57,17 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
 
 The app downloads the public dataset from the UCI Machine Learning Repository on first use, so an internet connection is required. Streamlit caches the loaded dataset and trained model.
 
-## Run the rule-check tests
+## Testing
 
-The test suite uses Python's built-in `unittest` module, so no extra test dependency is needed:
+Run the rule-check test suite using Python's built-in `unittest` module:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-These tests check selected examples only; passing them does not establish real-world scam-detection accuracy.
+**Latest local test run: 6 tests passed.** The tests cover benign college and family messages, delivery-payment warnings, links paired with account actions, OTP requests, and upfront job fees.
+
+These are unit tests for selected heuristic rules. They do not establish real-world scam-detection accuracy or validate every possible message.
 
 ## How it works
 
@@ -75,20 +78,25 @@ These tests check selected examples only; passing them does not establish real-w
 5. Trains a Logistic Regression classifier with balanced class weights.
 6. Evaluates on held-out examples and reports accuracy, precision/recall/F1, and a confusion matrix.
 7. For a user message, returns a predicted class, estimated probability, and weighted terms that influenced the prediction.
+8. Runs separate, transparent rule-based checks for selected suspicious patterns and displays those warnings independently from the ML prediction.
 
 ## Dataset and citation
 
 Almeida, T. A., Gómez Hidalgo, J. M., & Yamakami, A. (2011). *Contributions to the Study of SMS Spam Filtering: New Collection and Results*. UCI Machine Learning Repository: [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection).
+
+## Demo and screenshots
+
+A local demo recording and screenshots have been prepared. Add the video link and upload the screenshots to this repository before adding their links here.
 
 ## Deliverables checklist
 
 - [x] Public GitHub repository
 - [x] Streamlit application source
 - [x] Setup and usage instructions
-- [x] Deploy the Streamlit demo (confirm the deployed URL is included in the submission)
-- [ ] Record a demo video
-- [ ] Capture screenshots of the working app and evaluation results
-- [ ] Add final implementation/testing notes after validation
+- [x] Rule-check unit tests (6 passed locally)
+- [ ] Add the deployed Streamlit URL, if deployed
+- [ ] Upload the demo video or add a shareable video link
+- [ ] Upload screenshots of the working app and evaluation results
 
 ## Limitations
 
