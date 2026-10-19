@@ -1,5 +1,4 @@
 import io
-import re
 import zipfile
 from urllib.request import urlopen
 
@@ -11,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
+from risk_checks import detect_risk_signals
 
 DATA_URL = "https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip"
 
@@ -57,27 +57,6 @@ def train_model():
     report = classification_report(y_test, predictions, output_dict=True, zero_division=0)
     return model, df, accuracy, report, y_test, predictions
 
-def detect_risk_signals(text):
-    """Transparent heuristic checks for common social-engineering patterns.
-
-    These rules supplement the ML prediction; they are not a second trained model.
-    """
-    text_lower = text.lower()
-    signals = []
-    patterns = [
-        (r"\b(?:send|share|tell|reply with|provide)\b.{0,45}\b(?:otp|one[- ]time password|verification code|security code|pin|password)\b|\b(?:otp|verification code|security code|pin|password)\b.{0,45}\b(?:send|share|reply|provide)\b",
-         "Requests an OTP, PIN, password, or verification code"),
-        (r"\b(?:pay|payment|fee|charge)\b.{0,55}\b(?:release|claim|prize|parcel|package|customs|delivery)\b|\b(?:customs|parcel|package|delivery)\b.{0,55}\b(?:pay|payment|fee|charge|unpaid)\b",
-         "Requests payment connected to a prize or delivery"),
-        (r"\b(?:job|employment|salary|position)\b.{0,70}\b(?:registration fee|deposit|pay upfront|processing fee)\b|\b(?:registration fee|deposit|processing fee)\b.{0,70}\b(?:job|employment|salary|position)\b",
-         "Requests an upfront fee related to a job offer"),
-        (r"\b(?:account|bank|card)\b.{0,60}\b(?:suspended|blocked|restricted|will be closed)\b.{0,70}\b(?:click|verify|reply|send|provide)\b",
-         "Combines an account-threat claim with a request to act"),
-    ]
-    for pattern, description in patterns:
-        if re.search(pattern, text_lower, re.DOTALL):
-            signals.append(description)
-    return signals
 
 with st.sidebar:
     st.header("How it works")
