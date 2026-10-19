@@ -1,25 +1,43 @@
 # PhishGuard AI 🛡️
 
-An educational AI/ML application that classifies SMS-like text as **spam-like** or **legitimate-like**. It uses TF-IDF text features and Logistic Regression trained on the UCI SMS Spam Collection dataset.
+An educational AI/ML application that classifies SMS-like text as **spam-like** or **legitimate-like**. It combines a TF-IDF + Logistic Regression classifier trained on the UCI SMS Spam Collection dataset with transparent, rule-based checks for selected suspicious message patterns.
 
-> **Important:** This is a screening aid, not a security guarantee. It classifies message text, not URLs or websites. A legitimate-like prediction does not mean a message is safe.
+> **Important:** This is a screening aid, not a security guarantee. It classifies SMS-like message text, not URLs or websites. A legitimate-like prediction does not mean a message is safe.
 
 ## Features
 
-- Enter a message or try built-in examples.
-- Predict spam-like vs legitimate-like class.
+- Analyze a message or try built-in examples.
+- Predict a spam-like or legitimate-like class.
 - Show estimated model confidence and influential text features.
-- Run separate, transparent heuristic checks for selected high-risk patterns such as requests for OTPs/passwords, delivery-related payments, upfront job fees, links paired with account actions, and suspicious remote-app installation requests.
-- Keep the heuristic rules in a separate, unit-testable module (`risk_checks.py`).
-- Show the machine-learning prediction separately from additional warning signs.
-- Show dataset label counts, held-out evaluation metrics, and a confusion matrix.
-- Cache the dataset and trained model for the Streamlit session.
+- Check selected high-risk patterns such as requests for OTPs/passwords, delivery-related payments, upfront job fees, links paired with account actions, and suspicious remote-app installation requests.
+- Keep the heuristic rules separate and unit-testable in `risk_checks.py`.
+- Show the ML prediction separately from additional warning signs.
+- Display dataset label counts, held-out evaluation metrics, and a confusion matrix.
+- Cache the loaded dataset and trained model for the Streamlit session.
+
+## Demo and screenshots
+
+**Demo video:** [Watch the PhishGuard AI demo on GitHub](demo/demovideo-phishguard.mp4)
+
+### Application screenshots
+
+**1. App home**
+![PhishGuard AI home screen](screenshots/phishguard-home.png)
+
+**2. Message analysis**
+![PhishGuard AI message analysis](screenshots/phishguard-analysis.png)
+
+**3. Analysis results**
+![PhishGuard AI results](screenshots/phishguard-results.png)
+
+**4. Evaluation view**
+![PhishGuard AI evaluation results](screenshots/phishguard-evaluation.png)
 
 ## Tech stack
 
 - Python
 - Streamlit
-- Pandas and NumPy (via dependencies)
+- Pandas and NumPy
 - scikit-learn: TF-IDF + Logistic Regression
 - Matplotlib
 - Python `unittest` for rule-check tests
@@ -34,7 +52,7 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
    cd PhishGuard-AI
    ```
 
-3. Create and activate a virtual environment (optional but recommended):
+3. Create and activate a virtual environment (optional but recommended).
 
    **Windows PowerShell**
    ```powershell
@@ -65,28 +83,24 @@ Run the rule-check test suite using Python's built-in `unittest` module:
 python -m unittest discover -s tests -v
 ```
 
-**Latest local test run: 6 tests passed.** The tests cover benign college and family messages, delivery-payment warnings, links paired with account actions, OTP requests, and upfront job fees.
+**Latest reported local test run: 6 tests passed.** The tests cover benign college and family messages, delivery-payment warnings, links paired with account actions, OTP requests, and upfront job fees.
 
-These are unit tests for selected heuristic rules. They do not establish real-world scam-detection accuracy or validate every possible message.
+These tests cover selected heuristic rules only. They do not establish real-world scam-detection accuracy or validate every possible message.
 
 ## How it works
 
 1. Downloads the UCI SMS Spam Collection dataset.
-2. Removes duplicate/empty messages and separates the message text from its `ham`/`spam` label.
+2. Removes duplicate/empty messages and separates message text from its `ham`/`spam` label.
 3. Uses a stratified 80/20 train/test split.
 4. Converts messages to TF-IDF unigram and bigram features.
 5. Trains a Logistic Regression classifier with balanced class weights.
 6. Evaluates on held-out examples and reports accuracy, precision/recall/F1, and a confusion matrix.
-7. For a user message, returns a predicted class, estimated probability, and weighted terms that influenced the prediction.
-8. Runs separate, transparent rule-based checks for selected suspicious patterns and displays those warnings independently from the ML prediction.
+7. Returns a predicted class, estimated probability, and weighted terms that influenced the prediction.
+8. Runs separate rule-based checks for selected suspicious patterns and displays those warnings independently from the ML prediction.
 
 ## Dataset and citation
 
 Almeida, T. A., Gómez Hidalgo, J. M., & Yamakami, A. (2011). *Contributions to the Study of SMS Spam Filtering: New Collection and Results*. UCI Machine Learning Repository: [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection).
-
-## Demo and screenshots
-
-A local demo recording and screenshots have been prepared. Add the video link and upload the screenshots to this repository before adding their links here.
 
 ## Deliverables checklist
 
@@ -94,14 +108,14 @@ A local demo recording and screenshots have been prepared. Add the video link an
 - [x] Streamlit application source
 - [x] Setup and usage instructions
 - [x] Rule-check unit tests (6 passed locally)
-- [ ] Add the deployed Streamlit URL, if deployed
-- [ ] Upload the demo video or add a shareable video link
-- [ ] Upload screenshots of the working app and evaluation results
+- [x] Demo video added to the repository
+- [x] Four application screenshots added to the repository
+- [ ] Add the deployed Streamlit URL if deployment is part of the submission
 
 ## Limitations
 
-- Dataset examples are SMS messages; performance may differ on modern messaging apps, other languages, or new scam styles.
-- TF-IDF and Logistic Regression learn patterns in the training set and can make false positives or false negatives.
-- The extra safety checks are simple rules, not another AI model. They cover only selected patterns and are not comprehensive; attackers can reword messages, links can be deceptive in ways these rules do not detect, and legitimate messages can match a rule.
+- The dataset contains SMS messages; performance may differ on modern messaging apps, other languages, or new scam styles.
+- TF-IDF and Logistic Regression can make false-positive and false-negative predictions.
+- The extra safety checks are simple rules, not another AI model. They cover selected patterns only; attackers can reword messages, links can be deceptive in ways these rules do not detect, and legitimate messages can match a rule.
 - Model confidence is not a calibrated measure of real-world safety.
 - Never paste passwords, OTPs, personal data, or confidential messages into a demo.
