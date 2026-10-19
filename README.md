@@ -9,6 +9,8 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
 - Enter a message or try built-in examples.
 - Predict spam-like vs legitimate-like class.
 - Show estimated model confidence and influential text features.
+- Run separate, transparent heuristic checks for selected high-risk patterns such as requests for OTPs/passwords, delivery-related payments, and upfront job fees.
+- Show the machine-learning prediction separately from additional warning signs.
 - Show dataset label counts, held-out evaluation metrics, and a confusion matrix.
 - Cache the dataset and trained model for the Streamlit session.
 
@@ -81,5 +83,6 @@ Almeida, T. A., Gómez Hidalgo, J. M., & Yamakami, A. (2011). *Contributions to 
 
 - Dataset examples are SMS messages; performance may differ on modern messaging apps, other languages, or new scam styles.
 - TF-IDF and Logistic Regression learn patterns in the training set and can make false positives or false negatives.
+- The extra safety checks are simple rules, not another AI model. They cover only selected phrases and are not comprehensive; attackers can reword messages and legitimate messages can match a rule.
 - Model confidence is not a calibrated measure of real-world safety.
 - Never paste passwords, OTPs, personal data, or confidential messages into a demo.
