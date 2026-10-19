@@ -9,7 +9,8 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
 - Enter a message or try built-in examples.
 - Predict spam-like vs legitimate-like class.
 - Show estimated model confidence and influential text features.
-- Run separate, transparent heuristic checks for selected high-risk patterns such as requests for OTPs/passwords, delivery-related payments, and upfront job fees.
+- Run separate, transparent heuristic checks for selected high-risk patterns such as requests for OTPs/passwords, delivery-related payments, upfront job fees, links paired with account actions, and suspicious remote-app installation requests.
+- Keep the heuristic rules in a separate, unit-testable module (`risk_checks.py`).
 - Show the machine-learning prediction separately from additional warning signs.
 - Show dataset label counts, held-out evaluation metrics, and a confusion matrix.
 - Cache the dataset and trained model for the Streamlit session.
@@ -55,6 +56,16 @@ An educational AI/ML application that classifies SMS-like text as **spam-like** 
 
 The app downloads the public dataset from the UCI Machine Learning Repository on first use, so an internet connection is required. Streamlit caches the loaded dataset and trained model.
 
+## Run the rule-check tests
+
+The test suite uses Python's built-in `unittest` module, so no extra test dependency is needed:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+These tests check selected examples only; passing them does not establish real-world scam-detection accuracy.
+
 ## How it works
 
 1. Downloads the UCI SMS Spam Collection dataset.
@@ -74,7 +85,7 @@ Almeida, T. A., Gómez Hidalgo, J. M., & Yamakami, A. (2011). *Contributions to 
 - [x] Public GitHub repository
 - [x] Streamlit application source
 - [x] Setup and usage instructions
-- [ ] Deploy and verify the live demo
+- [x] Deploy the Streamlit demo (confirm the deployed URL is included in the submission)
 - [ ] Record a demo video
 - [ ] Capture screenshots of the working app and evaluation results
 - [ ] Add final implementation/testing notes after validation
@@ -83,6 +94,6 @@ Almeida, T. A., Gómez Hidalgo, J. M., & Yamakami, A. (2011). *Contributions to 
 
 - Dataset examples are SMS messages; performance may differ on modern messaging apps, other languages, or new scam styles.
 - TF-IDF and Logistic Regression learn patterns in the training set and can make false positives or false negatives.
-- The extra safety checks are simple rules, not another AI model. They cover only selected phrases and are not comprehensive; attackers can reword messages and legitimate messages can match a rule.
+- The extra safety checks are simple rules, not another AI model. They cover only selected patterns and are not comprehensive; attackers can reword messages, links can be deceptive in ways these rules do not detect, and legitimate messages can match a rule.
 - Model confidence is not a calibrated measure of real-world safety.
 - Never paste passwords, OTPs, personal data, or confidential messages into a demo.
